@@ -48,7 +48,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/daviddengcn/go-colortext v0.0.0-20160507010035-511bcaf42ccd
 	github.com/docker/distribution v0.0.0-20170726174610-edc3ab29cdff
-	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+	github.com/docker/docker v1.13.1
 	github.com/docker/go-connections v0.3.0
 	github.com/docker/go-units v0.3.3
 	github.com/docker/libnetwork v0.0.0-20180830151422-a9cd636e3789
@@ -60,7 +60,7 @@ require (
 	github.com/fatih/camelcase v0.0.0-20160318181535-f6a740d52f96
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-openapi/loads v0.17.2
-	github.com/go-openapi/spec v0.17.2
+	github.com/go-openapi/spec v0.19.7
 	github.com/go-openapi/strfmt v0.17.0
 	github.com/go-openapi/validate v0.18.0
 	github.com/go-ozzo/ozzo-validation v3.5.0+incompatible // indirect
@@ -178,7 +178,7 @@ require (
 	k8s.io/csi-translation-lib v0.0.0
 	k8s.io/gengo v0.0.0-20190116091435-f8a0810f38af
 	k8s.io/heapster v1.2.0-beta.1
-	k8s.io/klog v0.3.1
+	k8s.io/klog v1.0.0
 	k8s.io/kube-aggregator v0.0.0
 	k8s.io/kube-controller-manager v0.0.0
 	k8s.io/kube-openapi v0.0.0-20190228160746-b3a7cee44a30
