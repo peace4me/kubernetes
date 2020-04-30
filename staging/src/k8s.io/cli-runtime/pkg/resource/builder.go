@@ -494,6 +494,8 @@ func (b *Builder) AllNamespaces(allNamespace bool) *Builder {
 // RequireNamespace instructs the builder to set the namespace value for any object found
 // to NamespaceParam() if empty, and if the value on the resource does not match
 // NamespaceParam() an error will be returned.
+// 要求给指定命名空间下的对象设置命名空间属性，并且如果对象的命名空间属性和指定命名空间
+// 不一致的话，则会返回一个错误
 func (b *Builder) RequireNamespace() *Builder {
 	b.requireNamespace = true
 	return b
@@ -602,6 +604,9 @@ func (b *Builder) ReplaceAliases(input string) string {
 	return strings.Join(replaced, ",")
 }
 
+// 指定参数包含类型时的参数格式
+// 正确 get resource/name
+// 不正确 get resource resource/name
 func hasCombinedTypeArgs(args []string) (bool, error) {
 	hasSlash := 0
 	for _, s := range args {
@@ -795,6 +800,7 @@ func (b *Builder) visitorResult() *Result {
 	}
 
 	if b.selectAll {
+		// 空字符串
 		selector := labels.Everything().String()
 		b.labelSelector = &selector
 	}

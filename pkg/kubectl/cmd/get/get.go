@@ -437,9 +437,11 @@ func (o *GetOptions) transformRequests(req *rest.Request) {
 // Run performs the get operation.
 // TODO: remove the need to pass these arguments, like other commands.
 func (o *GetOptions) Run(f cmdutil.Factory, cmd *cobra.Command, args []string) error {
+	// 发起HTTP请求
 	if len(o.Raw) > 0 {
 		return o.raw(f)
 	}
+	// 开启客户端对资源的检查
 	if o.Watch || o.WatchOnly {
 		return o.watch(f, cmd, args)
 	}
@@ -451,19 +453,37 @@ func (o *GetOptions) Run(f cmdutil.Factory, cmd *cobra.Command, args []string) e
 		chunkSize = 0
 	}
 
-	r := f.NewBuilder().
+	// 返回一个包含资源遍历器的结果对象,通过infos()或者Object()方法去返回一个可以遍历的
+	// 结果集
+	r := f.
+		// 帮助从磁盘或者服务器加载对象并且实现了与资源交互的命令行接口通用模式
+		NewBuilder().
+		// 非结构化对象处理能力
 		Unstructured().
+		// 设置命名空间，并给该命名空间下的所有资源对象都加上默认命名空间属性，如果AllNameSpace为true
+		// 则覆盖命名空间设置，重置为空，即可以访问所有命名空间下的资源对象
 		NamespaceParam(o.Namespace).DefaultNamespace().AllNamespaces(o.AllNamespaces).
 		FilenameParam(o.ExplicitNamespace, &o.FilenameOptions).
+		// 定义对象标签选择器
 		LabelSelectorParam(o.LabelSelector).
+		// 定义对象值域选择器
 		FieldSelectorParam(o.FieldSelector).
+		// 这里只是单纯接收值
 		ExportParam(o.Export).
+		// 定义了接收端的单次接收允许的块(具有限定大小)数量，避免大文件传输时间过长
+		// 如果chunkSize为零值，则不分块传输
 		RequestChunksOf(chunkSize).
+		// 定义参数接收格式
 		ResourceTypeOrNameArgs(true, args...).
+		// 设置错误是否继续解析的标志
 		ContinueOnError().
+		// 获取任意对象的最后一份拷贝
 		Latest().
+		// 字段扁平化，针对Item值域，具体待后续分析 TODO
 		Flatten().
+		// 设置请求变更方法数组
 		TransformRequests(o.transformRequests).
+		// 返回请求结果
 		Do()
 
 	if o.IgnoreNotFound {
@@ -495,6 +515,8 @@ func (o *GetOptions) Run(f cmdutil.Factory, cmd *cobra.Command, args []string) e
 		return err
 	}
 
+	// 用户表格形式的数据交换和排序操作
+	// 初始化排序操作
 	var positioner OriginalPositioner
 	if o.Sort {
 		sorter := NewRuntimeSorter(objs, sorting)
@@ -511,6 +533,7 @@ func (o *GetOptions) Run(f cmdutil.Factory, cmd *cobra.Command, args []string) e
 	trackingWriter := &trackingWriterWrapper{Delegate: o.Out}
 
 	w := utilprinters.GetNewTabWriter(trackingWriter)
+	// 打印返回结果
 	for ix := range objs {
 		var mapping *meta.RESTMapping
 		var info *resource.Info
@@ -842,6 +865,9 @@ func cmdSpecifiesOutputFmt(cmd *cobra.Command) bool {
 	return cmdutil.GetFlagString(cmd, "output") != ""
 }
 
+// 是否含有不同的资源请求类型(GVK)
+// info封装了rest请求信息或者请求结果
+// Mapping封装了以rest方式请求资源的信息
 func multipleGVKsRequested(infos []*resource.Info) bool {
 	if len(infos) < 2 {
 		return false

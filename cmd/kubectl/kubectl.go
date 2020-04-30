@@ -41,7 +41,11 @@ func main() {
 	// TODO: once we switch everything over to Cobra commands, we can go back to calling
 	// cliflag.InitFlags() (by removing its pflag.Parse() call). For now, we have to set the
 	// normalize func and add the go flag set by hand.
+
+	// 命令行的标记选项名称翻译
+	// WordSepNormalizeFunc负责将名称中的_替换成-
 	pflag.CommandLine.SetNormalizeFunc(cliflag.WordSepNormalizeFunc)
+	// 添加命令行初始化操作，即异常退出
 	pflag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 	// cliflag.InitFlags()
 	logs.InitLogs()

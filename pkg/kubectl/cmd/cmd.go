@@ -293,6 +293,8 @@ var (
 )
 
 // NewDefaultKubectlCommand creates the `kubectl` command with default arguments
+// 使用默认参数创建kubectl命令
+// 默认命令解析前缀为kubectl
 func NewDefaultKubectlCommand() *cobra.Command {
 	return NewDefaultKubectlCommandWithArgs(NewDefaultPluginHandler(plugin.ValidPluginFilenamePrefixes), os.Args, os.Stdin, os.Stdout, os.Stderr)
 }
@@ -301,11 +303,13 @@ func NewDefaultKubectlCommand() *cobra.Command {
 func NewDefaultKubectlCommandWithArgs(pluginHandler PluginHandler, args []string, in io.Reader, out, errout io.Writer) *cobra.Command {
 	cmd := NewKubectlCommand(in, out, errout)
 
+	// 如果没有命令行参数解析器，则直接返回
 	if pluginHandler == nil {
 		return cmd
 	}
 
 	if len(args) > 1 {
+		// 拿到命令本身以外的参数列表
 		cmdPathPieces := args[1:]
 
 		// only look for suitable extension executables if
@@ -324,6 +328,8 @@ func NewDefaultKubectlCommandWithArgs(pluginHandler PluginHandler, args []string
 // PluginHandler is capable of parsing command line arguments
 // and performing executable filename lookups to search
 // for valid plugin files, and execute found plugins.
+// PluginHandler能够解析命令行参数并且可以根据文件名查找可执行的有效插件
+// 并执行
 type PluginHandler interface {
 	// exists at the given filename, or a boolean false.
 	// Lookup will iterate over a list of given prefixes
@@ -343,6 +349,7 @@ type DefaultPluginHandler struct {
 
 // NewDefaultPluginHandler instantiates the DefaultPluginHandler with a list of
 // given filename prefixes used to identify valid plugin filenames.
+// 通过有效的插件名称前缀去初始化PluginHandler
 func NewDefaultPluginHandler(validPrefixes []string) *DefaultPluginHandler {
 	return &DefaultPluginHandler{
 		ValidPrefixes: validPrefixes,
@@ -350,6 +357,7 @@ func NewDefaultPluginHandler(validPrefixes []string) *DefaultPluginHandler {
 }
 
 // Lookup implements PluginHandler
+// 查找形如prefix-filename的可执行文件
 func (h *DefaultPluginHandler) Lookup(filename string) (string, bool) {
 	for _, prefix := range h.ValidPrefixes {
 		path, err := exec.LookPath(fmt.Sprintf("%s-%s", prefix, filename))
@@ -382,6 +390,11 @@ func HandlePluginCommand(pluginHandler PluginHandler, cmdArgs []string) error {
 	foundBinaryPath := ""
 
 	// attempt to find binary, starting at longest possible name with given cmdArgs
+	// 查找策略
+	// -a-b-c
+	// 1.-a-b-c
+	// 2.-a-b
+	// 3.-a
 	for len(remainingArgs) > 0 {
 		path, found := pluginHandler.Lookup(strings.Join(remainingArgs, "-"))
 		if !found {
@@ -427,9 +440,11 @@ func NewKubectlCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 		PersistentPostRunE: func(*cobra.Command, []string) error {
 			return flushProfiling()
 		},
+		// 命令自动补全功能
 		BashCompletionFunction: bashCompletionFunc,
 	}
 
+	// cmd vs flags = 1 : n
 	flags := cmds.PersistentFlags()
 	flags.SetNormalizeFunc(cliflag.WarnWordSepNormalizeFunc) // Warn for "_" flags
 
@@ -437,8 +452,11 @@ func NewKubectlCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	// a.k.a. change all "_" to "-". e.g. glog package
 	flags.SetNormalizeFunc(cliflag.WordSepNormalizeFunc)
 
+	// 添加分析标识
 	addProfilingFlags(flags)
 
+	// 添加配置标识
+	// kubeConfigFlags里包含了用来获取restClient的所有必须值
 	kubeConfigFlags := genericclioptions.NewConfigFlags(true).WithDeprecatedPasswordFlag()
 	kubeConfigFlags.AddFlags(flags)
 	matchVersionKubeConfigFlags := cmdutil.NewMatchVersionFlags(kubeConfigFlags)
@@ -446,6 +464,10 @@ func NewKubectlCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 
 	cmds.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
+	// 工厂模式
+	// 1.为了实现不同资源的命令横向扩展
+	// 2.自定义实现，实现内部定制化和外部调用解耦
+	// 3.调用环路，底层可以依赖上层环路，但是不能依赖平级环路
 	f := cmdutil.NewFactory(matchVersionKubeConfigFlags)
 
 	// Sending in 'nil' for the getLanguageFn() results in using
@@ -453,6 +475,7 @@ func NewKubectlCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	//
 	// TODO: Consider adding a flag or file preference for setting
 	// the language, instead of just loading from the LANG env. variable.
+	// 查找LANG环境变量来做本地化
 	i18n.LoadTranslations("kubectl", nil)
 
 	// From this point and forward we get warnings on flags that contain "_" separators
@@ -460,6 +483,7 @@ func NewKubectlCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 
 	ioStreams := genericclioptions.IOStreams{In: in, Out: out, ErrOut: err}
 
+	// 定义kubectl命令集合
 	groups := templates.CommandGroups{
 		{
 			Message: "Basic Commands (Beginner):",
@@ -534,6 +558,7 @@ func NewKubectlCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 			},
 		},
 	}
+	// 将groups中的命令添加到kubectl root命令中
 	groups.Add(cmds)
 
 	filters := []string{"options"}

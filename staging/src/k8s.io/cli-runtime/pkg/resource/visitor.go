@@ -400,6 +400,8 @@ func (v FlattenListVisitor) Visit(fn VisitorFunc) error {
 			return fn(info, nil)
 		}
 
+		// 通过schema注册的通用资源对象
+		// 提供设置gvk和序列化的接口实现
 		items := []runtime.Object{}
 		itemsToProcess := []runtime.Object{info.Object}
 
