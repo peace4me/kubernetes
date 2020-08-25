@@ -3,7 +3,7 @@
 Implements [KEP 14 - Moving ComponentConfig API types to staging repos](https://git.k8s.io/enhancements/keps/sig-cluster-lifecycle/0014-20180707-componentconfig-api-types-to-staging.md#kubelet-changes)
 
 This repo provides external, versioned ComponentConfig API types for configuring the kubelet.
-These external types can easily be vendored and used by any third-party tool writing Kubernetes
+These external types can easily be vendored(提供) and used by any third-party tool writing Kubernetes
 ComponentConfig objects.
 
 ## Compatibility

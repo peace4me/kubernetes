@@ -30,7 +30,7 @@ const (
 	// Set the hairpin flag on the veth of containers in the respective
 	// container runtime.
 	HairpinVeth = "hairpin-veth"
-	// Make the container bridge promiscuous. This will force it to accept
+	// Make the container bridge promiscuous(混杂的，杂乱的). This will force it to accept
 	// hairpin packets, even if the flag isn't set on ports of the bridge.
 	PromiscuousBridge = "promiscuous-bridge"
 	// Neither of the above. If the kubelet is started in this hairpin mode
